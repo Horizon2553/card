@@ -116,13 +116,9 @@
   background: currentcolor;
 }
 
-.dynamic-hero-meta svg {
+.dynamic-hero-meta img {
   width: 17px;
   height: 17px;
-  fill: none;
-  stroke: currentcolor;
-  stroke-width: 1.6;
-  stroke-linecap: round;
   flex: none;
 }
 

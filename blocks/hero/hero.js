@@ -1,102 +1,46 @@
-const COHORT_ICON = `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-  <circle cx="8.5" cy="8" r="3.1" />
-  <circle cx="16.5" cy="9.2" r="2.4" />
-  <path d="M2.6 18.4c0-3 2.6-4.9 5.9-4.9s5.9 1.9 5.9 4.9" />
-  <path d="M15.4 13.8c2.9.1 5 1.9 5 4.6" />
-</svg>`;
-
-/** Pull plain text out of an authored cell. */
-const cellText = (cell) => (cell ? cell.textContent.trim() : '');
-
-
-export function readMeta(source) {
-  if (!source) return [];
-  if (typeof source === 'string') {
-    return source.split(/[•|,]/).map((s) => s.trim()).filter(Boolean);
-  }
-  const items = [...source.querySelectorAll('li')];
-  if (items.length) return items.map((li) => li.textContent.trim()).filter(Boolean);
-  return readMeta(cellText(source));
+function moveField(cell, className) {
+  if (!cell || !cell.textContent.trim()) return null;
+  cell.className = className;
+  return cell;
 }
 
-
-export function renderHero({
-  eyebrow = '', title = '', badge = '', meta = [], description = '', media = null,
-  classPrefix = 'hero', headingLevel = 'h1',
-} = {}) {
-  const fragment = document.createDocumentFragment();
-
-  if (media) {
-    const bg = document.createElement('div');
-    bg.className = `${classPrefix}-bg`;
-    bg.append(media);
-    fragment.append(bg);
+function extractTitle(container) {
+  if (!container) return null;
+  const heading = container.querySelector('h1, h2, h3, h4, h5, h6');
+  if (heading && heading.textContent.trim()) {
+    heading.className = 'hero-title';
+    return heading;
   }
-
-  const layout = document.createElement('div');
-  layout.className = `${classPrefix}-layout`;
-  fragment.append(layout);
-
-  const text = document.createElement('div');
-  text.className = `${classPrefix}-text`;
-  layout.append(text);
-
-  if (eyebrow) {
-    const p = document.createElement('p');
-    p.className = `${classPrefix}-eyebrow`;
-    p.textContent = eyebrow;
-    text.append(p);
-  }
-
-  if (title || badge) {
-    const headline = document.createElement('div');
-    headline.className = `${classPrefix}-headline`;
-
-    if (title) {
-      const heading = document.createElement(headingLevel);
-      heading.className = `${classPrefix}-title`;
-      heading.textContent = title;
-      headline.append(heading);
-    }
-    if (badge) {
-      const span = document.createElement('span');
-      span.className = `${classPrefix}-badge`;
-      span.textContent = badge;
-      headline.append(span);
-    }
-    text.append(headline);
-  }
-
-  if (meta.length) {
-    const ul = document.createElement('ul');
-    ul.className = `${classPrefix}-meta`;
-    meta.forEach((item, i) => {
-      const li = document.createElement('li');
-      if (i === 0) li.innerHTML = COHORT_ICON;
-      li.append(document.createTextNode(item));
-      ul.append(li);
-    });
-    text.append(ul);
-  }
-
-  if (description) {
-    const p = document.createElement('p');
-    p.className = `${classPrefix}-description`;
-    p.textContent = description;
-    text.append(p);
-  }
-
-  return fragment;
+  if (!container.textContent.trim()) return null;
+  const h1 = document.createElement('h1');
+  h1.className = 'hero-title';
+  const source = container.querySelector('p') || container;
+  h1.append(...source.childNodes);
+  return h1;
 }
 
-
-function primeLcp(picture) {
-  if (!picture) return;
-  const img = picture.querySelector('img') || picture;
-  img.setAttribute('loading', 'eager');
-  img.setAttribute('fetchpriority', 'high');
+function readMeta(cell) {
+  if (!cell) return null;
+  const list = cell.querySelector('ul, ol');
+  if (list && list.children.length) {
+    list.className = 'hero-meta';
+    return list;
+  }
+  const icon = cell.querySelector('.icon');
+  const text = cell.textContent.trim();
+  if (!text) return null;
+  const items = text.split(/[•|,]/).map((s) => s.trim()).filter(Boolean);
+  if (!items.length) return null;
+  const ul = document.createElement('ul');
+  ul.className = 'hero-meta';
+  items.forEach((item, i) => {
+    const li = document.createElement('li');
+    if (i === 0 && icon) li.append(icon);
+    li.append(document.createTextNode(item));
+    ul.append(li);
+  });
+  return ul;
 }
-
 
 function isAutoBlocked(block) {
   return block.children.length === 1
@@ -108,116 +52,71 @@ function isAutoBlocked(block) {
 function parseHeroBlock(block) {
   if (isAutoBlocked(block)) {
     return {
-      title: block.querySelector('h1').textContent.trim(),
+      title: extractTitle(block),
       media: block.querySelector('picture'),
     };
   }
 
-  const rows = [...block.children].map((row) => row.firstElementChild);
-  const [eyebrow, title, badge, meta, description, image] = rows;
+  const [eyebrow, title, badge, meta, description, image] = [...block.children]
+    .map((row) => row.firstElementChild);
 
   return {
-    eyebrow: cellText(eyebrow),
-    title: cellText(title),
-    badge: cellText(badge),
+    eyebrow: moveField(eyebrow, 'hero-eyebrow'),
+    title: extractTitle(title),
+    badge: moveField(badge, 'hero-badge'),
     meta: readMeta(meta),
-    description: cellText(description),
+    description: moveField(description, 'hero-description'),
     media: image ? image.querySelector('picture, img') : null,
   };
 }
 
-/** Only one hero on the page should own the h1; later ones step down to h2. */
-function titleHeadingLevel() {
-  return document.querySelector('h1') ? 'h2' : 'h1';
-}
+function renderHero({
+  eyebrow = null, title = null, badge = null, meta = null, description = null, media = null,
+} = {}) {
+  const fragment = document.createDocumentFragment();
 
-function renderSkeleton() {
-  const skeleton = document.createElement('div');
-  skeleton.className = 'hero-skeleton';
-  skeleton.append(
-    document.createElement('span'),
-    document.createElement('span'),
-    document.createElement('span'),
-    document.createElement('span'),
-  );
-  return skeleton;
-}
-
-function renderError() {
-  const error = document.createElement('p');
-  error.className = 'hero-error';
-  error.textContent = 'This hero could not be loaded.';
-  return error;
-}
-
-/** Resolves media referencing the fetched page's own path back to an absolute URL. */
-function resolveMediaBase(scope, path) {
-  const base = new URL(path, window.location);
-  scope.querySelectorAll('img[src^="./media_"]').forEach((img) => {
-    img.src = new URL(img.getAttribute('src'), base).href;
-  });
-  scope.querySelectorAll('source[srcset^="./media_"]').forEach((source) => {
-    source.srcset = new URL(source.getAttribute('srcset'), base).href;
-  });
-}
-
-/**
- * Fetches the hero content authored on another page, so it can be reused
- * without re-authoring it (e.g. surfacing the same hero across pages).
- * @param {string} path Site-root-relative path to the source page
- * @returns {Promise<object|null>} Parsed hero data, or null if none was found
- */
-export async function loadDynamicHero(path) {
-  if (!path || !path.startsWith('/') || path.startsWith('//')) return null;
-  // the site root's .plain.html 404s; the index document itself resolves correctly
-  const fetchPath = path === '/' ? '/index' : path;
-  const resp = await fetch(`${fetchPath}.plain.html`);
-  if (!resp.ok) return null;
-
-  const doc = document.createElement('div');
-  doc.innerHTML = await resp.text();
-
-  const source = doc.querySelector('.hero');
-  if (!source) return null;
-
-  resolveMediaBase(source, path);
-  return parseHeroBlock(source);
-}
-
-async function decorateDynamic(block) {
-  const path = block.textContent.trim();
-
-  block.classList.add('is-loading');
-  block.textContent = '';
-  block.append(renderSkeleton());
-
-  let data;
-  try {
-    data = await loadDynamicHero(path);
-    if (!data) throw new Error(`no hero content found at "${path}"`);
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('hero (dynamic): failed to load', error);
-    block.textContent = '';
-    block.append(renderError());
-    return;
-  } finally {
-    block.classList.remove('is-loading');
+  if (media) {
+    const bg = document.createElement('div');
+    bg.className = 'hero-bg';
+    bg.append(media);
+    fragment.append(bg);
   }
 
-  block.textContent = '';
-  block.append(renderHero({ ...data, headingLevel: titleHeadingLevel() }));
+  const layout = document.createElement('div');
+  layout.className = 'hero-layout';
+  fragment.append(layout);
+
+  const text = document.createElement('div');
+  text.className = 'hero-text';
+  layout.append(text);
+
+  if (eyebrow) text.append(eyebrow);
+
+  if (title || badge) {
+    const headline = document.createElement('div');
+    headline.className = 'hero-headline';
+    if (title) headline.append(title);
+    if (badge) headline.append(badge);
+    text.append(headline);
+  }
+
+  if (meta) text.append(meta);
+  if (description) text.append(description);
+
+  return fragment;
+}
+
+function primeLcp(picture) {
+  if (!picture) return;
+  const img = picture.querySelector('img') || picture;
+  img.setAttribute('loading', 'eager');
+  img.setAttribute('fetchpriority', 'high');
 }
 
 export default async function decorate(block) {
-  if (block.classList.contains('dynamic')) {
-    await decorateDynamic(block);
-    return;
-  }
-
   const data = parseHeroBlock(block);
   primeLcp(data.media);
-  const hero = renderHero({ ...data, headingLevel: titleHeadingLevel() });
+  const hero = renderHero(data);
   block.textContent = '';
   block.append(hero);
 }

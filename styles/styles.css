@@ -300,12 +300,6 @@ main > .section {
   margin: 40px 0;
 }
 
-main > .section > div {
-  max-width: 1200px;
-  margin: auto;
-  padding: 0 24px;
-}
-
 main > .section:first-of-type {
   margin-top: 0;
 }
@@ -313,12 +307,6 @@ main > .section:first-of-type {
 /* space out multiple blocks authored within the same section */
 main > .section > div + div {
   margin-top: 40px;
-}
-
-@media (width >= 900px) {
-  main > .section > div {
-    padding: 0 32px;
-  }
 }
 
 /* section metadata */
