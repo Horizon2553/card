@@ -1,115 +1,62 @@
-function buildMetaIcon() {
-  const img = document.createElement('img');
-  img.src = `${window.hlx.codeBasePath}/icons/teams.svg`;
-  img.alt = '';
-  img.loading = 'lazy';
-  img.width = 17;
-  img.height = 17;
-  return img;
-}
+const heroData = {
+  eyebrow: 'My Learning',
+  title: 'Cohort Configure and Manage Adobe Experience Platform',
+  badge: 'In Progress',
+  meta: ['Cohort', 'Professional', '4 Weeks'],
+  description:
+    'Join a four-week cohort experience focused on building practical skills in Adobe Journey Optimizer. Learn through live sessions, guided labs, and peer collaboration as you progress from core concepts to creating personalized, cross-channel customer journeys.',
+  image: 'image1.png',
+  icon: '/icons/teams.svg',
+};
 
-function readMeta(meta) {
-  if (!meta) return [];
-  return meta.split(/[•|,]/).map((s) => s.trim()).filter(Boolean);
-}
+export default function decorate(block) {
+  const image = document.createElement('img');
+  image.src = heroData.image;
+  image.alt = heroData.title;
+  image.className = 'dynamic-hero-image';
 
-function readSheetUrl(block) {
-  const link = block.querySelector('a[href]');
-  const raw = link ? link.getAttribute('href') : block.textContent.trim();
-  if (!raw) return null;
-  const path = raw.replace(/\.json$/, '');
-  return `${path}.json`;
-}
+  const icon = document.createElement('span');
+  icon.className = 'hero-icon';
+  icon.innerHTML = `
+    <img src="${heroData.icon}" alt="">
+  `;
 
-function buildMedia(src, alt) {
-  if (!src) return null;
-  const picture = document.createElement('picture');
-  const img = document.createElement('img');
-  img.src = src;
-  img.alt = alt || 'Hero Image';
-  img.loading = 'lazy';
-  picture.append(img);
-  return picture;
-}
+  block.classList.add('dynamic-hero');
 
-function renderCard(row) {
-  const card = document.createElement('div');
-  card.className = 'dynamic-hero-card';
+  block.innerHTML = `
+    <div class="dynamic-hero-bg"></div>
 
-  const media = buildMedia(row.image, row.title);
-  if (media) {
-    const bg = document.createElement('div');
-    bg.className = 'dynamic-hero-bg';
-    bg.append(media);
-    card.append(bg);
-  }
+    <div class="dynamic-hero-layout">
+      <div class="dynamic-hero-text">
 
-  const layout = document.createElement('div');
-  layout.className = 'dynamic-hero-layout';
-  card.append(layout);
+        <p class="dynamic-hero-eyebrow">
+          ${heroData.eyebrow}
+        </p>
 
-  const text = document.createElement('div');
-  text.className = 'dynamic-hero-text';
-  layout.append(text);
+        <div class="dynamic-hero-headline">
+          <h2 class="dynamic-hero-title">
+            ${heroData.title}
+          </h2>
 
-  if (row.eyebrow) {
-    const p = document.createElement('p');
-    p.className = 'dynamic-hero-eyebrow';
-    p.textContent = row.eyebrow;
-    text.append(p);
-  }
+          <span class="dynamic-hero-badge">
+            ${heroData.badge}
+          </span>
+        </div>
 
-  if (row.title || row.badge) {
-    const headline = document.createElement('div');
-    headline.className = 'dynamic-hero-headline';
+        <ul class="dynamic-hero-meta">
+          <li>${heroData.meta[0]}</li>
+          <li>${heroData.meta[1]}</li>
+          <li>${heroData.meta[2]}</li>
+        </ul>
 
-    if (row.title) {
-      const heading = document.createElement('h2');
-      heading.className = 'dynamic-hero-title';
-      heading.textContent = row.title;
-      headline.append(heading);
-    }
-    if (row.badge) {
-      const span = document.createElement('span');
-      span.className = 'dynamic-hero-badge';
-      span.textContent = row.badge;
-      headline.append(span);
-    }
-    text.append(headline);
-  }
+        <p class="dynamic-hero-description">
+          ${heroData.description}
+        </p>
 
-  const meta = readMeta(row.meta);
-  if (meta.length) {
-    const ul = document.createElement('ul');
-    ul.className = 'dynamic-hero-meta';
-    meta.forEach((item, i) => {
-      const li = document.createElement('li');
-      if (i === 0) li.append(buildMetaIcon());
-      li.append(document.createTextNode(item));
-      ul.append(li);
-    });
-    text.append(ul);
-  }
+      </div>
+    </div>
+  `;
 
-  if (row.description) {
-    const p = document.createElement('p');
-    p.className = 'dynamic-hero-description';
-    p.textContent = row.description;
-    text.append(p);
-  }
-
-  return card;
-}
-
-export default async function decorate(block) {
-  const sheetUrl = readSheetUrl(block);
-  block.textContent = '';
-  if (!sheetUrl) return;
-
-  const resp = await fetch(sheetUrl);
-  if (!resp.ok) return;
-  const { data } = await resp.json();
-  if (!Array.isArray(data) || !data.length) return;
-
-  data.forEach((row) => block.append(renderCard(row)));
+  block.querySelector('.dynamic-hero-bg').append(image);
+  block.querySelector('.dynamic-hero-meta li').prepend(icon);
 }
