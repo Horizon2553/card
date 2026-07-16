@@ -35,8 +35,7 @@ function renderHero({
 }
 
 export default function decorate(block) {
-  const [eyebrow, title, badge, meta, description, image] =
-    [...block.children].map((row) => row.firstElementChild);
+  const [eyebrow, title, badge, meta, description, image] = block.children;
 
   eyebrow.classList.add('hero-eyebrow');
   title.classList.add('hero-title');
