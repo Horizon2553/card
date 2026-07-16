@@ -104,34 +104,115 @@ function isAutoBlocked(block) {
     && !!block.querySelector('picture');
 }
 
-export default function decorate(block) {
+/** Read hero field data out of an authored `.hero` block, wherever it came from. */
+function parseHeroBlock(block) {
   if (isAutoBlocked(block)) {
-    const picture = block.querySelector('picture');
-    primeLcp(picture);
-    const hero = renderHero({
+    return {
       title: block.querySelector('h1').textContent.trim(),
-      media: picture,
-    });
-    block.textContent = '';
-    block.append(hero);
-    return;
+      media: block.querySelector('picture'),
+    };
   }
 
   const rows = [...block.children].map((row) => row.firstElementChild);
   const [eyebrow, title, badge, meta, description, image] = rows;
 
-  const picture = image ? image.querySelector('picture, img') : null;
-  primeLcp(picture);
-
-  const hero = renderHero({
+  return {
     eyebrow: cellText(eyebrow),
     title: cellText(title),
     badge: cellText(badge),
     meta: readMeta(meta),
     description: cellText(description),
-    media: picture,
-  });
+    media: image ? image.querySelector('picture, img') : null,
+  };
+}
 
+function renderSkeleton() {
+  const skeleton = document.createElement('div');
+  skeleton.className = 'hero-skeleton';
+  skeleton.append(
+    document.createElement('span'),
+    document.createElement('span'),
+    document.createElement('span'),
+    document.createElement('span'),
+  );
+  return skeleton;
+}
+
+function renderError() {
+  const error = document.createElement('p');
+  error.className = 'hero-error';
+  error.textContent = 'This hero could not be loaded.';
+  return error;
+}
+
+/** Resolves media referencing the fetched page's own path back to an absolute URL. */
+function resolveMediaBase(scope, path) {
+  const base = new URL(path, window.location);
+  scope.querySelectorAll('img[src^="./media_"]').forEach((img) => {
+    img.src = new URL(img.getAttribute('src'), base).href;
+  });
+  scope.querySelectorAll('source[srcset^="./media_"]').forEach((source) => {
+    source.srcset = new URL(source.getAttribute('srcset'), base).href;
+  });
+}
+
+/**
+ * Fetches the hero content authored on another page, so it can be reused
+ * without re-authoring it (e.g. surfacing the same hero across pages).
+ * @param {string} path Site-root-relative path to the source page
+ * @returns {Promise<object|null>} Parsed hero data, or null if none was found
+ */
+export async function loadDynamicHero(path) {
+  if (!path || !path.startsWith('/') || path.startsWith('//')) return null;
+  // the site root's .plain.html 404s; the index document itself resolves correctly
+  const fetchPath = path === '/' ? '/index' : path;
+  const resp = await fetch(`${fetchPath}.plain.html`);
+  if (!resp.ok) return null;
+
+  const doc = document.createElement('div');
+  doc.innerHTML = await resp.text();
+
+  const source = doc.querySelector('.hero');
+  if (!source) return null;
+
+  resolveMediaBase(source, path);
+  return parseHeroBlock(source);
+}
+
+async function decorateDynamic(block) {
+  const path = block.textContent.trim();
+
+  block.classList.add('is-loading');
+  block.textContent = '';
+  block.append(renderSkeleton());
+
+  let data;
+  try {
+    data = await loadDynamicHero(path);
+    if (!data) throw new Error(`no hero content found at "${path}"`);
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('hero (dynamic): failed to load', error);
+    block.textContent = '';
+    block.append(renderError());
+    return;
+  } finally {
+    block.classList.remove('is-loading');
+  }
+
+  block.textContent = '';
+  block.append(renderHero(data));
+}
+
+export default async function decorate(block) {
+  if (block.classList.contains('dynamic')) {
+    await decorateDynamic(block);
+    return;
+  }
+
+  const data = parseHeroBlock(block);
+  primeLcp(data.media);
+  const hero = renderHero(data);
   block.textContent = '';
   block.append(hero);
 }
