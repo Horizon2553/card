@@ -8,13 +8,6 @@ function readSheetUrl(block) {
   return `${path}.json`;
 }
 
-/**
- * Builds a plain `<picture>` for a sheet-authored image URL.
- * Unlike `createOptimizedPicture`, this keeps the URL's query string intact,
- * since sheet images are often external, signed CDN links (e.g. a
- * `cp_oauth_jwt` token) rather than AEM-hosted assets that support
- * width/format optimization params.
- */
 function buildMedia(src, alt) {
   if (!src) return null;
   const picture = document.createElement('picture');
