@@ -47,6 +47,7 @@ export default async function decorate(block) {
       description: row.description,
       media: buildMedia(row.image, row.title),
       classPrefix: 'dynamic-hero',
+      headingLevel: 'h2',
     }));
     block.append(card);
   });
