@@ -22,7 +22,7 @@ export function readMeta(source) {
 
 export function renderHero({
   eyebrow = '', title = '', badge = '', meta = [], description = '', media = null,
-  classPrefix = 'hero',
+  classPrefix = 'hero', headingLevel = 'h1',
 } = {}) {
   const fragment = document.createDocumentFragment();
 
@@ -53,10 +53,10 @@ export function renderHero({
     headline.className = `${classPrefix}-headline`;
 
     if (title) {
-      const h1 = document.createElement('h1');
-      h1.className = `${classPrefix}-title`;
-      h1.textContent = title;
-      headline.append(h1);
+      const heading = document.createElement(headingLevel);
+      heading.className = `${classPrefix}-title`;
+      heading.textContent = title;
+      headline.append(heading);
     }
     if (badge) {
       const span = document.createElement('span');
@@ -124,6 +124,11 @@ function parseHeroBlock(block) {
     description: cellText(description),
     media: image ? image.querySelector('picture, img') : null,
   };
+}
+
+/** Only one hero on the page should own the h1; later ones step down to h2. */
+function titleHeadingLevel() {
+  return document.querySelector('h1') ? 'h2' : 'h1';
 }
 
 function renderSkeleton() {
@@ -201,7 +206,7 @@ async function decorateDynamic(block) {
   }
 
   block.textContent = '';
-  block.append(renderHero(data));
+  block.append(renderHero({ ...data, headingLevel: titleHeadingLevel() }));
 }
 
 export default async function decorate(block) {
@@ -212,7 +217,7 @@ export default async function decorate(block) {
 
   const data = parseHeroBlock(block);
   primeLcp(data.media);
-  const hero = renderHero(data);
+  const hero = renderHero({ ...data, headingLevel: titleHeadingLevel() });
   block.textContent = '';
   block.append(hero);
 }
