@@ -1,34 +1,23 @@
 .dynamic-hero {
-  --hero-ink: #131313;
-  --hero-badge-bg: #f393ff;
-
-  --hero-scrim: linear-gradient(
-    90deg,
-    rgb(255 255 255 / 98%) 0%,
-    rgb(255 255 255 / 85%) 50%,
-    rgb(255 255 255 / 0%) 100%
-  );
-
   position: relative;
-  overflow: hidden;
-  min-height: 420px;
-  color: var(--hero-ink);
-  font-family: "Adobe Clean", adobe-clean, sans-serif;
   display: flex;
   align-items: center;
+  min-height: 420px;
+  overflow: hidden;
+  color: #131313;
+  font-family: "Adobe Clean", adobe-clean, sans-serif;
 }
 
 .dynamic-hero-bg {
   position: absolute;
   inset: 0;
-  z-index: 1;
+  z-index: -1;
 }
 
 .dynamic-hero-bg::after {
   content: "";
   position: absolute;
   inset: 0;
-  z-index: 1;
   background: linear-gradient(
     90deg,
     rgb(255 255 255 / 98%) 0%,
@@ -36,40 +25,38 @@
   );
 }
 
-.dynamic-hero-image,
-.dynamic-hero-bg img {
+.dynamic-hero-bg img,
+.dynamic-hero-image {
+  display: block;
   width: 100%;
   height: 100%;
-  display: block;
   object-fit: cover;
   object-position: right center;
 }
 
 .dynamic-hero-layout {
-  position: relative;
-  z-index: 3;
   width: 100%;
   max-width: 1180px;
   margin: 0 auto;
   padding: 60px 32px;
+  position: relative;
 }
 
 .dynamic-hero-text {
-  max-width: 58%;
+  max-width: 60%;
 }
 
 .dynamic-hero-eyebrow {
-  margin: 0 0 24px;
+  margin-bottom: 24px;
   font-size: 15px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
 }
 
 .dynamic-hero-headline {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   gap: 24px;
 }
 
@@ -77,124 +64,122 @@
   flex: 1;
   margin: 0;
   font-family: Roboto, sans-serif;
-  font-size: clamp(2rem, 3vw, 2.8rem);
+  font-size: 44px;
   font-weight: 700;
-  line-height: 1.15;
+  line-height: 1.2;
 }
 
 .dynamic-hero-badge {
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   padding: 8px 18px;
   border-radius: 999px;
-  background: var(--hero-badge-bg);
+  background: #f393ff;
   font-size: 14px;
   font-weight: 500;
+  white-space: nowrap;
 }
 
 .dynamic-hero-meta {
   display: flex;
-  align-items: center;
   flex-wrap: wrap;
   gap: 16px;
   margin: 24px 0;
   padding: 0;
   list-style: none;
-  font-size: 14px;
-  font-weight: 700;
 }
 
 .dynamic-hero-meta li {
   display: flex;
   align-items: center;
   gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
 }
 
 .dynamic-hero-meta li + li::before {
   content: "•";
-  margin-right: 8px;
-  opacity: 0.5;
 }
 
 .hero-icon img {
   width: 18px;
   height: 18px;
-  object-fit: contain;
 }
 
 .dynamic-hero-description {
   max-width: 700px;
+}
+
+.dynamic-hero-description p {
+  margin: 0;
   font-size: 16px;
   line-height: 1.7;
-  opacity: 0.9;
 }
 
-@media (width <= 992px) {
+@media (max-width: 992px) {
   .dynamic-hero-text {
     max-width: 75%;
-  }
-}
-
-@media (width <= 768px) {
-  .dynamic-hero {
-    --hero-scrim: linear-gradient(
-      0deg,
-      rgb(255 255 255 / 100%) 0%,
-      rgb(255 255 255 / 85%) 60%,
-      rgb(255 255 255 / 40%) 100%
-    );
-
-    min-height: auto;
   }
 
   .dynamic-hero-layout {
     padding: 48px 24px;
   }
+}
+
+@media (max-width: 768px) {
+  .dynamic-hero {
+    min-height: auto;
+  }
+
+  .dynamic-hero-layout {
+    padding: 40px 20px;
+  }
 
   .dynamic-hero-text {
-    width: 100%;
     max-width: 100%;
   }
 
   .dynamic-hero-headline {
     flex-direction: column-reverse;
     align-items: flex-start;
-    gap: 12px;
+    gap: 16px;
+  }
+
+  .dynamic-hero-title {
+    font-size: 34px;
   }
 
   .dynamic-hero-bg img {
     object-position: center;
   }
 
-  .dynamic-hero-description {
-    font-size: 15px;
+  .dynamic-hero-bg::after {
+    background: linear-gradient(
+      0deg,
+      rgb(255 255 255 / 100%) 0%,
+      rgb(255 255 255 / 95%) 75%,
+      rgb(255 255 255 / 60%) 100%
+    );
   }
 }
 
-@media (width <= 480px) {
+@media (max-width: 480px) {
   .dynamic-hero-layout {
-    padding: 32px 16px;
+    padding: 24px 16px;
   }
 
-  .dynamic-hero-eyebrow {
-    margin-bottom: 16px;
-    font-size: 13px;
+  .dynamic-hero-title {
+    font-size: 28px;
   }
 
   .dynamic-hero-meta {
     flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
+    gap: 10px;
   }
 
   .dynamic-hero-meta li + li::before {
     display: none;
   }
 
-  .dynamic-hero-description {
+  .dynamic-hero-description p {
     font-size: 14px;
-    line-height: 1.6;
   }
 }
