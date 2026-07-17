@@ -2,7 +2,6 @@
   --hero-ink: #131313;
   --hero-badge-bg: #f393ff;
 
-  /* Modernized overlay: Uses a standard horizontal gradient for wide viewports */
   --hero-scrim: linear-gradient(
     90deg,
     rgb(255 255 255 / 98%) 0%,
@@ -16,21 +15,21 @@
   color: var(--hero-ink);
   font-family: "Adobe Clean", adobe-clean, sans-serif;
   display: flex;
-  align-items: center; /* Vertically centers content if min-height expands */
+  align-items: center;
 }
 
 .dynamic-hero-bg {
   position: absolute;
   inset: 0;
-  z-index: 1; /* Keep background behind content but properly layered */
+  z-index: 1;
 }
 
 .dynamic-hero-bg::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    background: linear-gradient(
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
     90deg,
     rgb(255 255 255 / 98%) 0%,
     rgb(255 255 255 / 0%) 85%
@@ -48,7 +47,7 @@
 
 .dynamic-hero-layout {
   position: relative;
-  z-index: 3; /* Places content safely above the background overlay */
+  z-index: 3;
   width: 100%;
   max-width: 1180px;
   margin: 0 auto;
@@ -78,7 +77,7 @@
   flex: 1;
   margin: 0;
   font-family: Roboto, sans-serif;
-  font-size: clamp(2rem, 3vw, 2.8rem); /* Enhanced scaling fluid typography */
+  font-size: clamp(2rem, 3vw, 2.8rem);
   font-weight: 700;
   line-height: 1.15;
 }
@@ -132,17 +131,14 @@
   opacity: 0.9;
 }
 
-/* ---------- Tablets & Small Laptops ---------- */
 @media (width <= 992px) {
   .dynamic-hero-text {
-    max-width: 75%; /* Allows text more room as the screen shrinks */
+    max-width: 75%;
   }
 }
 
-/* ---------- Mobile (Smartphones) ---------- */
 @media (width <= 768px) {
   .dynamic-hero {
-    /* Changes gradient to vertical so text remains readable over a full-bleed image */
     --hero-scrim: linear-gradient(
       0deg,
       rgb(255 255 255 / 100%) 0%,
@@ -150,7 +146,7 @@
       rgb(255 255 255 / 40%) 100%
     );
 
-    min-height: auto; /* Allow content to dictate height on small screens */
+    min-height: auto;
   }
 
   .dynamic-hero-layout {
@@ -163,13 +159,13 @@
   }
 
   .dynamic-hero-headline {
-    flex-direction: column-reverse; /* Places the badge neatly above or below title */
+    flex-direction: column-reverse;
     align-items: flex-start;
     gap: 12px;
   }
 
   .dynamic-hero-bg img {
-    object-position: center; 
+    object-position: center;
   }
 
   .dynamic-hero-description {
@@ -177,7 +173,6 @@
   }
 }
 
-/* ---------- Small Mobile (Tight Screens) ---------- */
 @media (width <= 480px) {
   .dynamic-hero-layout {
     padding: 32px 16px;
@@ -194,7 +189,6 @@
     gap: 12px;
   }
 
-  /* Removes bullet points cleanly since items are now stacked vertically */
   .dynamic-hero-meta li + li::before {
     display: none;
   }
